@@ -10,9 +10,32 @@ First, ask the user to share their raw notes, ideas, or thoughts about the produ
 
 Wait for their response before proceeding.
 
-## Step 2: Ask Clarifying Questions
+## Step 2: Determine Platform
 
-After receiving their input, use the AskUserQuestion tool to ask 3-5 targeted questions to help shape:
+After receiving their initial input, use the AskUserQuestion tool to determine the target platform:
+
+"What platform are you building for?"
+
+Options:
+- **Web Application** — React, Vue, Svelte, or other web framework
+- **macOS Native** — Swift with AppKit or SwiftUI
+- **iOS Native** — Swift with UIKit or SwiftUI
+- **Cross-Platform Desktop** — Electron, Tauri, or similar
+- **Mobile Cross-Platform** — React Native, Flutter
+- **CLI Tool** — Command-line application
+- **API/Backend** — Server-side service
+
+**Important:** The platform choice affects:
+- Which design phases apply (e.g., no shell design for CLI tools)
+- Terminology used (views vs screens, windows vs pages)
+- Export format and handoff structure
+- Available UI patterns and components
+
+Store the platform choice for use throughout the design process.
+
+## Step 3: Ask Clarifying Questions
+
+After receiving their platform choice, use the AskUserQuestion tool to ask 3-5 targeted questions to help shape:
 
 - **The product name** - A clear, concise name for the product
 - **The core product description** (1-3 sentences that capture the essence)
@@ -32,11 +55,13 @@ Other example clarifying questions (adapt based on their input):
 
 Ask questions one or two at a time, and engage conversationally.
 
-## Step 3: Present Draft and Refine
+## Step 4: Present Draft and Refine
 
 Once you have enough information, present a draft summary:
 
 "Based on our discussion, here's what I'm capturing for **[Product Name]**:
+
+**Platform:** [Selected Platform]
 
 **Description:**
 [Draft 1-3 sentence description]
@@ -54,12 +79,15 @@ Does this capture your vision? Would you like to adjust anything?"
 
 Iterate until the user is satisfied.
 
-## Step 4: Create the File
+## Step 5: Create the File
 
 Once the user approves, create the file at `/product/product-overview.md` with this exact format:
 
 ```markdown
 # [Product Name]
+
+## Platform
+[Selected Platform]
 
 ## Description
 [The finalized 1-3 sentence description]
@@ -83,11 +111,47 @@ Once the user approves, create the file at `/product/product-overview.md` with t
 
 **Important:** The `# [Product Name]` heading at the top is required - this is what displays as the card title in the app.
 
-## Step 5: Confirm Completion
+## Step 6: Confirm Completion
 
 Let the user know:
 
-"I've created your product overview at `/product/product-overview.md`. The homepage will now display **[Product Name]** with your product vision. You can run `/product-roadmap` next to break this down into development sections."
+"I've created your product overview at `/product/product-overview.md`. The homepage will now display **[Product Name]** with your product vision.
+
+**Platform:** [Selected Platform]
+
+Based on your platform choice, the design process will be tailored accordingly:
+- [Platform-specific note about which phases apply]
+
+You can run `/product-roadmap` next to break this down into development sections."
+
+### Platform-Specific Notes
+
+**Web Application:**
+- Full design process applies (shell, screen designs, React components)
+- Export includes React/Tailwind components
+
+**macOS Native / iOS Native:**
+- Shell design focuses on window/navigation patterns
+- No React component export — provides Swift type definitions and UI specifications
+- Architecture phase is especially important for native platform patterns
+
+**Cross-Platform Desktop (Electron/Tauri):**
+- Similar to web, but with desktop window considerations
+- Export includes web components plus desktop integration notes
+
+**Mobile Cross-Platform:**
+- Shell design focuses on tab bars, navigation stacks
+- Export includes component specifications and navigation patterns
+
+**CLI Tool:**
+- Skip shell design and screen design phases
+- Focus on command structure, flags, output formatting
+- Export includes command specifications and help text
+
+**API/Backend:**
+- Skip visual design phases entirely
+- Focus on data model, endpoints, authentication
+- Export includes API specifications and data schemas
 
 ## Important Notes
 
@@ -97,3 +161,4 @@ Let the user know:
 - Keep the final output concise and clear
 - The format must match exactly for the app to parse it correctly
 - **Always ensure the product has a name** - if user didn't provide one, ask for it
+- **Always determine the platform** - this affects the entire design process

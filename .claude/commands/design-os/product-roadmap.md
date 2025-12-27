@@ -46,6 +46,28 @@ Iterate on the sections based on user feedback. Ask clarifying questions:
 - "What would you consider the most critical section to build first?"
 - "Are there any major areas I'm missing?"
 
+### Assess Initial Risk
+
+For each section, provide an initial complexity assessment:
+
+"Before we finalize, let me flag potential technical considerations for each section:
+
+| Section | Expected Complexity | Key Considerations |
+|---------|--------------------|--------------------|
+| [Section 1] | Low/Medium/High | [Brief note on why] |
+| [Section 2] | Low/Medium/High | [Brief note on why] |
+| [Section 3] | Low/Medium/High | [Brief note on why] |
+
+**Dependencies between sections:**
+- [Section X] depends on [Section Y] for [reason]
+
+**Potential risk areas:**
+- [Any technically challenging features identified]
+
+These are initial assessments - we'll refine them during the `/shape-section` and `/architecture` phases."
+
+Use AskUserQuestion to ask: "Does this complexity assessment match your expectations? Any sections you're particularly concerned about?"
+
 ### Create the File
 
 Once approved, create `/product/product-roadmap.md` with this exact format:
@@ -57,21 +79,35 @@ Once approved, create `/product/product-roadmap.md` with this exact format:
 
 ### 1. [Section Title]
 [One sentence description]
+- **Complexity:** [Low/Medium/High]
+- **Depends on:** [None / Section names]
 
 ### 2. [Section Title]
 [One sentence description]
+- **Complexity:** [Low/Medium/High]
+- **Depends on:** [None / Section names]
 
 ### 3. [Section Title]
 [One sentence description]
+- **Complexity:** [Low/Medium/High]
+- **Depends on:** [None / Section names]
+
+## Risk Areas
+- [Any high-risk technical challenges identified]
+- [Features that may need proof-of-concept]
 ```
 
 ### Confirm
 
 "I've created your product roadmap at `/product/product-roadmap.md`. The homepage now shows your [N] sections:
 
-1. **[Section 1]** — [Description]
-2. **[Section 2]** — [Description]
-3. **[Section 3]** — [Description]
+| Section | Complexity | Dependencies |
+|---------|------------|--------------|
+| [Section 1] | [Level] | [Deps] |
+| [Section 2] | [Level] | [Deps] |
+| [Section 3] | [Level] | [Deps] |
+
+**Risk areas flagged:** [Summary of any high-risk items, or 'None identified']
 
 **Next step:** Run `/data-model` to define the core entities and relationships in your product. This establishes a shared vocabulary that keeps your sections consistent."
 
@@ -119,3 +155,6 @@ Follow the "Creating New" flow above, but note you're replacing the existing roa
 - The numbered format (`### 1. Title`) is required for parsing
 - Keep descriptions to one sentence - concise and clear
 - Don't create too many sections (3-5 is ideal)
+- Complexity assessments help plan the architecture phase
+- Dependencies inform the recommended build order
+- Risk areas get deeper attention in `/architecture`

@@ -1,6 +1,6 @@
 # Shape Section
 
-You are helping the user define the specification for a section of their product. This is a conversational process to establish the scope of functionality, user flows, and UI requirements.
+You are helping the user define the specification for a section of their product. This is a conversational process to establish the scope of functionality, user flows, UI requirements, and technical feasibility.
 
 ## Step 1: Check Prerequisites
 
@@ -50,9 +50,55 @@ Example questions (adapt based on their input and the section):
 
 Ask questions one or two at a time, conversationally. Focus on user experience and interface requirements - no backend or database details.
 
-## Step 5: Ask About Shell Configuration
+## Step 5: Technical Feasibility Check
 
-If a shell design has been created for this project (check if `/src/shell/components/AppShell.tsx` exists), ask the user about shell usage:
+Before proceeding, assess the technical complexity of this section. Consider:
+
+1. **Platform Constraints** - Does this section require capabilities the platform may not support well?
+2. **External Dependencies** - Are there third-party libraries, APIs, or services needed?
+3. **Performance Concerns** - Are there operations that could be slow or resource-intensive?
+4. **Known Hard Problems** - Does this involve technically challenging areas (e.g., real-time sync, offline support, complex animations)?
+
+If any high-risk areas are identified, flag them for the user:
+
+"I want to flag some technical considerations for **[Section Title]**:
+
+**Potential Complexity:**
+- [Issue 1] - [Why it's complex]
+- [Issue 2] - [Why it's complex]
+
+**Questions to consider:**
+- [Question about approach or trade-off]
+
+These don't prevent us from proceeding, but they should be addressed in the architecture phase. Want to adjust the scope, or continue as planned?"
+
+Use AskUserQuestion with options:
+- "Continue as planned" - Accept the complexity and document for architecture phase
+- "Simplify scope" - Reduce scope to lower complexity
+- "Discuss alternatives" - Explore different approaches
+
+## Step 6: Define Test Scenarios
+
+Ask the user about key test scenarios early to clarify expected behavior:
+
+"Let's define how we'll know this section works correctly. What are the key scenarios to test?"
+
+Use AskUserQuestion to gather:
+- **Happy path** - Main flow works as expected
+- **Empty states** - What shows when there's no data?
+- **Error cases** - What happens when things go wrong?
+- **Edge cases** - Unusual but valid situations
+
+Example questions:
+- "What should happen when there's no [data type] yet?"
+- "How should errors be communicated to the user?"
+- "Are there any edge cases we should handle specially?"
+
+Document 3-5 core test scenarios that will be included in the spec.
+
+## Step 7: Ask About Shell Configuration
+
+If a shell design has been created for this project (check if `/src/shell/components/AppShell.tsx` or platform-equivalent exists), ask the user about shell usage:
 
 "Should this section's screen designs be displayed **inside the app shell** (with navigation header), or should they be **standalone pages** (without the shell)?
 
@@ -64,7 +110,7 @@ Use AskUserQuestion with options:
 
 If no shell design exists yet, skip this question and default to using the shell.
 
-## Step 6: Present Draft and Refine
+## Step 8: Present Draft and Refine
 
 Once you have enough information, present a draft specification:
 
@@ -83,13 +129,22 @@ Once you have enough information, present a draft specification:
 - [Requirement 2]
 - [Requirement 3]
 
+**Test Scenarios:**
+- [Scenario 1: Happy path]
+- [Scenario 2: Empty state]
+- [Scenario 3: Error case]
+
+**Technical Notes:**
+- Complexity: [Low/Medium/High]
+- [Any flagged technical considerations]
+
 **Display:** [Inside app shell / Standalone]
 
 Does this capture everything? Would you like to adjust anything?"
 
 Iterate until the user is satisfied. Don't add features that weren't discussed. Don't leave out features that were discussed.
 
-## Step 7: Create the Spec File
+## Step 9: Create the Spec File
 
 Once the user approves, create the file at `product/sections/[section-id]/spec.md` with this exact format:
 
@@ -111,6 +166,25 @@ Once the user approves, create the file at `product/sections/[section-id]/spec.m
 - [Requirement 3]
 [Add all requirements discussed]
 
+## Test Scenarios
+
+### Happy Path
+- [Main flow scenario]
+
+### Empty States
+- [What to show when no data exists]
+
+### Error Cases
+- [How errors are handled and displayed]
+
+### Edge Cases
+- [Any special situations identified]
+
+## Technical Notes
+- **Complexity:** [Low/Medium/High]
+- **Dependencies:** [Any external libraries or services needed]
+- **Risk Areas:** [Technical challenges to address in architecture phase]
+
 ## Configuration
 - shell: [true/false]
 ```
@@ -121,18 +195,25 @@ Once the user approves, create the file at `product/sections/[section-id]/spec.m
 
 The section-id is the slug version of the section title (lowercase, hyphens instead of spaces).
 
-## Step 8: Confirm and Next Steps
+## Step 10: Confirm and Next Steps
 
 Let the user know:
 
 "I've created the specification at `product/sections/[section-id]/spec.md`.
 
-You can review the spec on the section page. When you're ready, run `/sample-data` to create sample data for this section."
+**Complexity:** [Low/Medium/High]
+**Technical flags:** [Any issues to address in architecture phase, or 'None']
+
+You can review the spec on the section page. When you're ready, run `/sample-data` to create sample data for this section.
+
+After all sections are specified, run `/architecture` to plan the technical architecture before exporting."
 
 ## Important Notes
 
 - Be conversational and helpful, not robotic
 - Ask follow-up questions when answers are vague
-- Focus on UX and UI - don't discuss backend, database, or API details
+- Focus on UX and UI - but flag technical complexity when spotted
 - Keep the spec concise - only include what was discussed, no bloat
 - The format must match exactly for the app to parse it correctly
+- Test scenarios help clarify behavior early, preventing rework later
+- Technical flags feed into the architecture phase

@@ -30,33 +30,73 @@ The product you're planning and designing. When creating screen designs and expo
 Design OS follows a structured planning sequence:
 
 ### 1. Product Overview (`/product-vision`)
-Define your product's core description, the problems it solves, and key features.
+Define your product's core description, the problems it solves, key features, and **target platform**.
 **Output:** `product/product-overview.md`
 
+**Platform options:**
+- Web Application (React, Vue, Svelte)
+- macOS Native (Swift/AppKit/SwiftUI)
+- iOS Native (Swift/UIKit/SwiftUI)
+- Cross-Platform Desktop (Electron, Tauri)
+- Mobile Cross-Platform (React Native, Flutter)
+- CLI Tool
+- API/Backend
+
+The platform choice affects which phases apply and what export format is used.
+
 ### 2. Product Roadmap (`/product-roadmap`)
-Break your product into 3-5 development sections. Each section represents a self-contained area that can be designed and built independently.
+Break your product into 3-5 development sections with **initial complexity assessments** and dependencies.
 **Output:** `product/product-roadmap.md`
+
+Includes:
+- Section descriptions
+- Complexity ratings (Low/Medium/High)
+- Inter-section dependencies
+- Risk areas flagged early
 
 ### 3. Data Model (`/data-model`)
 Define the core entities and relationships in your product. This establishes the "nouns" of your system and ensures consistency across sections.
 **Output:** `product/data-model/data-model.md`
 
-### 4. Design System (`/design-tokens`)
+### 4. Dependencies (`/dependencies`) — *Optional but recommended*
+Identify and evaluate external libraries, services, and system requirements before deep design work.
+**Output:** `product/dependencies.md`
+
+### 5. Design System (`/design-tokens`)
 Choose your color palette (from Tailwind) and typography (from Google Fonts). These tokens are applied to all screen designs.
 **Output:** `product/design-system/colors.json`, `product/design-system/typography.json`
 
-### 5. Application Shell (`/design-shell`)
+*Note: For CLI or API-only products, this phase may be skipped.*
+
+### 6. Application Shell (`/design-shell`)
 Design the persistent navigation and layout that wraps all sections.
 **Output:** `product/shell/spec.md`, `src/shell/components/`
 
-### 6. For Each Section:
-- `/shape-section` — Define the specification
+*Note: For CLI or API-only products, this phase may be skipped.*
+
+### 7. For Each Section:
+- `/shape-section` — Define the specification (includes **technical feasibility checks** and **test scenarios**)
 - `/sample-data` — Create sample data and types
 - `/design-screen` — Create screen designs
 - `/screenshot-design` — Capture screenshots
 
-### 7. Export (`/export-product`)
-Generate the complete export package with all components, types, and handoff documentation.
+### 8. Architecture (`/architecture`)
+Plan the technical architecture based on platform, dependencies, and section requirements.
+**Output:** `product/architecture/`
+
+Includes:
+- State management patterns
+- Platform-specific integration approaches
+- Risk mitigation strategies
+- Implementation order recommendations
+
+**Platform pattern references:**
+- macOS: `.claude/commands/design-os/patterns/macos-patterns.md`
+- iOS: `.claude/commands/design-os/patterns/ios-patterns.md`
+- CLI: `.claude/commands/design-os/patterns/cli-patterns.md`
+
+### 9. Export (`/export-product`)
+Generate the complete export package with all components, types, architecture docs, and handoff documentation.
 **Output:** `product-plan/`
 
 ---
@@ -65,8 +105,9 @@ Generate the complete export package with all components, types, and handoff doc
 
 ```
 product/                           # Product definition (portable)
-├── product-overview.md            # Product description, problems/solutions, features
-├── product-roadmap.md             # List of sections with titles and descriptions
+├── product-overview.md            # Product description, platform, problems/solutions, features
+├── product-roadmap.md             # Sections with complexity and dependencies
+├── dependencies.md                # External libraries and services
 │
 ├── data-model/                    # Global data model
 │   └── data-model.md              # Entity descriptions and relationships
@@ -78,11 +119,15 @@ product/                           # Product definition (portable)
 ├── shell/                         # Application shell
 │   └── spec.md                    # Shell specification
 │
+├── architecture/                  # Technical architecture
+│   ├── overview.md                # High-level architecture and risks
+│   └── [domain].md                # Domain-specific architecture docs
+│
 └── sections/
     └── [section-name]/
-        ├── spec.md                # Section specification
+        ├── spec.md                # Section spec (with test scenarios, complexity)
         ├── data.json              # Sample data for screen designs
-        ├── types.ts               # TypeScript interfaces
+        ├── types.ts               # TypeScript interfaces (or .swift for native)
         └── *.png                  # Screenshots
 
 src/
@@ -103,7 +148,7 @@ src/
 
 product-plan/                      # Export package (generated)
 ├── README.md                      # Quick start guide
-├── product-overview.md            # Product summary
+├── product-overview.md            # Product summary with platform
 ├── prompts/                       # Ready-to-use prompts for coding agents
 │   ├── one-shot-prompt.md         # Prompt for full implementation
 │   └── section-prompt.md          # Prompt template for incremental
@@ -113,9 +158,13 @@ product-plan/                      # Export package (generated)
 │       ├── 01-foundation.md
 │       ├── 02-shell.md
 │       └── [NN]-[section-id].md   # Section-specific instructions
+├── architecture/                  # Technical architecture docs
+│   ├── overview.md                # Architecture summary and risks
+│   └── [domain].md                # Domain-specific patterns
+├── dependencies.md                # External dependencies list
 ├── design-system/                 # Tokens, colors, fonts
 ├── data-model/                    # Types and sample data
-├── shell/                         # Shell components
+├── shell/                         # Shell components (or specs for native)
 └── sections/                      # Section components (with tests.md each)
 ```
 
@@ -196,14 +245,24 @@ The `/export-product` command generates a complete handoff package:
 - **Ready-to-use prompts**: Pre-written prompts to copy/paste into coding agents
   - `one-shot-prompt.md`: For full implementation in one session
   - `section-prompt.md`: Template for section-by-section implementation
+- **Architecture documentation**: Technical decisions and patterns
+  - `architecture/overview.md`: High-level architecture and risk summary
+  - Domain-specific docs (state management, integrations, etc.)
+- **Dependencies**: External libraries, services, and system requirements
 - **Implementation instructions**: Detailed guides for each milestone
   - `product-overview.md`: Always provide for context
   - `one-shot-instructions.md`: All milestones combined
   - Incremental instructions in `instructions/incremental/`
 - **Test instructions**: Each section includes `tests.md` with TDD specs
-- **Portable components**: Props-based, ready for any React setup
+- **Portable components**: Props-based components (React for web, Swift types for native)
 
 The prompts guide the implementation agent to ask clarifying questions about authentication, user modeling, and tech stack before building. Test instructions are framework-agnostic and include user flows, empty states, and edge cases.
+
+**Platform-specific exports:**
+- **Web**: React/Tailwind components
+- **Native (macOS/iOS)**: Swift type definitions and UI specifications
+- **CLI**: Command structure specs and output formatting
+- **API**: Endpoint specifications and data schemas
 
 ---
 
