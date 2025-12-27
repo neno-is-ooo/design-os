@@ -1,25 +1,92 @@
 # TUI (Terminal UI) Design Patterns
 
-Reference patterns for interactive terminal user interface applications. Focuses on the Charm ecosystem (Bubble Tea, Lip Gloss, Bubbles) with notes for other frameworks.
-
-## Framework Overview
-
-| Framework | Language | Architecture | Best For |
-|-----------|----------|--------------|----------|
-| **Bubble Tea** | Go | Elm-like (Model-Update-View) | Full TUI apps |
-| **Lip Gloss** | Go | Declarative styling | Styling for Bubble Tea |
-| **Bubbles** | Go | Pre-built components | Common UI patterns |
-| **Textual** | Python | Widget-based, CSS-like | Python apps, rapid prototyping |
-| **Ratatui** | Rust | Immediate mode | Rust apps, performance |
-| **Ink** | JS/TS | React-like | JS/TS apps, React developers |
+Comprehensive patterns for the Charm ecosystem and other TUI frameworks.
 
 ---
 
-## Elm Architecture (Bubble Tea)
+## Charm Ecosystem Overview
 
-Bubble Tea uses The Elm Architecture: Model → Update → View
+The Charm ecosystem provides a complete toolkit for building terminal applications in Go.
+
+### Core Libraries
+
+| Library | Purpose | Use When |
+|---------|---------|----------|
+| **[Bubble Tea](https://github.com/charmbracelet/bubbletea)** | TUI framework (Elm architecture) | Building interactive terminal apps |
+| **[Lip Gloss](https://github.com/charmbracelet/lipgloss)** | Declarative styling | Styling any terminal output |
+| **[Bubbles](https://github.com/charmbracelet/bubbles)** | Pre-built components | Lists, tables, inputs, spinners, etc. |
+| **[Huh](https://github.com/charmbracelet/huh)** | Forms and prompts | User input, wizards, accessible forms |
+
+### Content Rendering
+
+| Library | Purpose | Use When |
+|---------|---------|----------|
+| **[Glamour](https://github.com/charmbracelet/glamour)** | Markdown rendering | Displaying formatted markdown |
+| **[Glow](https://github.com/charmbracelet/glow)** | Markdown reader CLI | Reading/browsing markdown files |
+
+### Infrastructure
+
+| Library | Purpose | Use When |
+|---------|---------|----------|
+| **[Wish](https://github.com/charmbracelet/wish)** | SSH server | Serving TUIs over SSH |
+| **[Wishlist](https://github.com/charmbracelet/wishlist)** | SSH directory | Multi-app SSH endpoint |
+| **[Log](https://github.com/charmbracelet/log)** | Colorful logging | Structured, styled logs |
+
+### Shell Scripting
+
+| Library | Purpose | Use When |
+|---------|---------|----------|
+| **[Gum](https://github.com/charmbracelet/gum)** | Shell script TUI | Adding TUI to bash/shell scripts |
+
+### Tooling
+
+| Library | Purpose | Use When |
+|---------|---------|----------|
+| **[VHS](https://github.com/charmbracelet/vhs)** | Terminal recording | Creating demo GIFs/videos |
+| **[Freeze](https://github.com/charmbracelet/freeze)** | Terminal screenshots | Code/output images |
+
+### AI Integration
+
+| Library | Purpose | Use When |
+|---------|---------|----------|
+| **[Mods](https://github.com/charmbracelet/mods)** | LLM in pipelines | AI-powered CLI workflows |
+| **[Crush](https://github.com/charmbracelet/crush)** | AI coding agent | Terminal-based AI assistant |
+
+### Experimental (x/)
+
+| Package | Purpose |
+|---------|---------|
+| **[x/teatest](https://pkg.go.dev/github.com/charmbracelet/x/teatest)** | Testing Bubble Tea programs |
+| **[x/term](https://pkg.go.dev/github.com/charmbracelet/x/term)** | Terminal utilities |
+| **[x/input](https://pkg.go.dev/github.com/charmbracelet/x/input)** | Input handling |
+| **[x/ansi](https://pkg.go.dev/github.com/charmbracelet/x/ansi)** | ANSI escape sequences |
+
+---
+
+## Other TUI Frameworks
+
+| Framework | Language | Architecture | Best For |
+|-----------|----------|--------------|----------|
+| **[Textual](https://github.com/Textualize/textual)** | Python | Widget-based, CSS-like | Python apps, rapid prototyping |
+| **[Ratatui](https://github.com/ratatui-org/ratatui)** | Rust | Immediate mode | Rust apps, performance |
+| **[Ink](https://github.com/vadimdemedes/ink)** | JS/TS | React-like | JS/TS apps, React developers |
+
+---
+
+## Bubble Tea Core Patterns
+
+### The Elm Architecture
+
+Bubble Tea uses Model → Update → View:
 
 ```go
+package main
+
+import (
+    "fmt"
+    tea "github.com/charmbracelet/bubbletea"
+)
+
 // Model holds application state
 type model struct {
     items    []string
@@ -27,12 +94,12 @@ type model struct {
     selected map[int]struct{}
 }
 
-// Init returns initial model and optional command
+// Init returns initial command (can be nil)
 func (m model) Init() tea.Cmd {
     return nil
 }
 
-// Update handles messages and returns updated model
+// Update handles messages and returns updated model + command
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     switch msg := msg.(type) {
     case tea.KeyMsg:
@@ -58,7 +125,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     return m, nil
 }
 
-// View renders the UI as a string
+// View renders UI as a string
 func (m model) View() string {
     s := "Select items:\n\n"
     for i, item := range m.items {
@@ -75,162 +142,256 @@ func (m model) View() string {
     s += "\nPress q to quit.\n"
     return s
 }
+
+func main() {
+    p := tea.NewProgram(model{
+        items:    []string{"Item 1", "Item 2", "Item 3"},
+        selected: make(map[int]struct{}),
+    })
+    if _, err := p.Run(); err != nil {
+        fmt.Println("Error:", err)
+    }
+}
+```
+
+### Full-Window vs Inline Mode
+
+```go
+// Full-window (default) - takes over terminal
+p := tea.NewProgram(model{})
+
+// Inline - renders in place, doesn't clear screen
+p := tea.NewProgram(model{}, tea.WithoutClearScreen())
+
+// Alt screen buffer - preserves terminal content on exit
+p := tea.NewProgram(model{}, tea.WithAltScreen())
+
+// Mouse support
+p := tea.NewProgram(model{}, tea.WithMouseCellMotion())
+```
+
+### Sub-Model Composition
+
+```go
+// Parent model containing child models
+type model struct {
+    list     list.Model      // Bubbles list component
+    input    textinput.Model // Bubbles text input
+    viewport viewport.Model  // Bubbles viewport
+    state    appState
+}
+
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    var cmds []tea.Cmd
+
+    switch m.state {
+    case stateList:
+        var cmd tea.Cmd
+        m.list, cmd = m.list.Update(msg)
+        cmds = append(cmds, cmd)
+    case stateInput:
+        var cmd tea.Cmd
+        m.input, cmd = m.input.Update(msg)
+        cmds = append(cmds, cmd)
+    }
+
+    return m, tea.Batch(cmds...)
+}
 ```
 
 ---
 
-## Layout Patterns
+## Huh: Forms and Prompts
 
-### Full-Screen Application
+Huh is a dedicated forms library with accessibility support and theming.
 
-```go
-// Main layout with header, content, footer
-func (m model) View() string {
-    return lipgloss.JoinVertical(
-        lipgloss.Left,
-        m.headerView(),
-        m.contentView(),
-        m.footerView(),
-    )
-}
-
-func (m model) headerView() string {
-    title := titleStyle.Render("My Application")
-    return headerStyle.Render(title)
-}
-
-func (m model) footerView() string {
-    help := "↑/↓: navigate • enter: select • q: quit"
-    return footerStyle.Render(help)
-}
-```
-
-### Split Panes (Sidebar + Content)
+### Basic Form
 
 ```go
-func (m model) View() string {
-    sidebar := m.sidebarView()
-    content := m.contentView()
+import "github.com/charmbracelet/huh"
 
-    return lipgloss.JoinHorizontal(
-        lipgloss.Top,
-        sidebarStyle.Width(30).Render(sidebar),
-        contentStyle.Render(content),
-    )
-}
+var name string
+var email string
+
+form := huh.NewForm(
+    huh.NewGroup(
+        huh.NewInput().
+            Title("Name").
+            Value(&name),
+        huh.NewInput().
+            Title("Email").
+            Value(&email).
+            Validate(func(s string) error {
+                if !strings.Contains(s, "@") {
+                    return errors.New("invalid email")
+                }
+                return nil
+            }),
+    ),
+)
+
+err := form.Run()
 ```
 
-### Tabs
+### Field Types
+
+```go
+// Text input
+huh.NewInput().
+    Title("Username").
+    Placeholder("Enter username...").
+    Suggestions([]string{"admin", "user", "guest"}).
+    Value(&username)
+
+// Text area (multi-line)
+huh.NewText().
+    Title("Description").
+    Lines(5).
+    Value(&description)
+
+// Select (single choice)
+huh.NewSelect[string]().
+    Title("Color").
+    Options(
+        huh.NewOption("Red", "red"),
+        huh.NewOption("Green", "green"),
+        huh.NewOption("Blue", "blue"),
+    ).
+    Value(&color)
+
+// Multi-select
+huh.NewMultiSelect[string]().
+    Title("Toppings").
+    Options(
+        huh.NewOption("Cheese", "cheese").Selected(true),
+        huh.NewOption("Pepperoni", "pepperoni"),
+        huh.NewOption("Mushrooms", "mushrooms"),
+    ).
+    Value(&toppings)
+
+// Confirm
+huh.NewConfirm().
+    Title("Are you sure?").
+    Affirmative("Yes").
+    Negative("No").
+    Value(&confirmed)
+```
+
+### Multi-Page Forms (Groups)
+
+```go
+form := huh.NewForm(
+    // Page 1: Account info
+    huh.NewGroup(
+        huh.NewInput().Title("Username").Value(&username),
+        huh.NewInput().Title("Email").Value(&email),
+    ).Title("Account"),
+
+    // Page 2: Preferences
+    huh.NewGroup(
+        huh.NewSelect[string]().Title("Theme").Options(...).Value(&theme),
+        huh.NewConfirm().Title("Notifications").Value(&notifications),
+    ).Title("Preferences"),
+)
+```
+
+### Theming
+
+```go
+// Built-in themes
+form.WithTheme(huh.ThemeDracula())
+form.WithTheme(huh.ThemeCatppuccin())
+form.WithTheme(huh.ThemeBase16())
+form.WithTheme(huh.ThemeCharm()) // default
+
+// Custom theme
+theme := huh.ThemeBase()
+theme.Focused.Title = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+form.WithTheme(theme)
+```
+
+### Accessibility Mode
+
+```go
+// Enable accessible mode for screen readers
+form.WithAccessible(true)
+
+// Or via environment variable
+// ACCESSIBLE=true ./myapp
+```
+
+### Huh Spinner
+
+```go
+import "github.com/charmbracelet/huh/spinner"
+
+action := func() {
+    time.Sleep(2 * time.Second)
+}
+
+spinner.New().
+    Title("Processing...").
+    Action(action).
+    Run()
+```
+
+### Embedding in Bubble Tea
 
 ```go
 type model struct {
-    tabs     []string
-    activeTab int
+    form *huh.Form
+}
+
+func (m model) Init() tea.Cmd {
+    return m.form.Init()
+}
+
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    form, cmd := m.form.Update(msg)
+    if f, ok := form.(*huh.Form); ok {
+        m.form = f
+    }
+
+    if m.form.State == huh.StateCompleted {
+        // Form submitted
+    }
+
+    return m, cmd
 }
 
 func (m model) View() string {
-    var renderedTabs []string
-    for i, tab := range m.tabs {
-        if i == m.activeTab {
-            renderedTabs = append(renderedTabs, activeTabStyle.Render(tab))
-        } else {
-            renderedTabs = append(renderedTabs, tabStyle.Render(tab))
-        }
-    }
-    tabBar := lipgloss.JoinHorizontal(lipgloss.Top, renderedTabs...)
-    content := m.tabContent()
-
-    return lipgloss.JoinVertical(lipgloss.Left, tabBar, content)
+    return m.form.View()
 }
 ```
 
 ---
 
-## Component Patterns
+## Bubbles Components
 
-### List with Selection
+### List
 
 ```go
 import "github.com/charmbracelet/bubbles/list"
 
-type model struct {
-    list list.Model
+// Define item type
+type item struct {
+    title, desc string
 }
 
-func (m model) Init() tea.Cmd {
-    return nil
+func (i item) Title() string       { return i.title }
+func (i item) Description() string { return i.desc }
+func (i item) FilterValue() string { return i.title }
+
+// Create list
+items := []list.Item{
+    item{title: "Item 1", desc: "Description 1"},
+    item{title: "Item 2", desc: "Description 2"},
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-    var cmd tea.Cmd
-    m.list, cmd = m.list.Update(msg)
-    return m, cmd
-}
-
-func (m model) View() string {
-    return m.list.View()
-}
-```
-
-### Text Input
-
-```go
-import "github.com/charmbracelet/bubbles/textinput"
-
-type model struct {
-    input textinput.Model
-}
-
-func initialModel() model {
-    ti := textinput.New()
-    ti.Placeholder = "Enter text..."
-    ti.Focus()
-    ti.CharLimit = 156
-    ti.Width = 40
-    return model{input: ti}
-}
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-    var cmd tea.Cmd
-    m.input, cmd = m.input.Update(msg)
-    return m, cmd
-}
-```
-
-### Form with Multiple Inputs
-
-```go
-type model struct {
-    inputs  []textinput.Model
-    focused int
-}
-
-func (m *model) nextInput() {
-    m.focused = (m.focused + 1) % len(m.inputs)
-}
-
-func (m *model) prevInput() {
-    m.focused--
-    if m.focused < 0 {
-        m.focused = len(m.inputs) - 1
-    }
-}
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-    switch msg := msg.(type) {
-    case tea.KeyMsg:
-        switch msg.String() {
-        case "tab", "down":
-            m.nextInput()
-        case "shift+tab", "up":
-            m.prevInput()
-        }
-    }
-
-    // Update focused input
-    cmd := m.updateInputs(msg)
-    return m, cmd
-}
+l := list.New(items, list.NewDefaultDelegate(), 30, 20)
+l.Title = "My List"
+l.SetShowStatusBar(true)
+l.SetFilteringEnabled(true)
 ```
 
 ### Table
@@ -255,6 +416,48 @@ t := table.New(
     table.WithFocused(true),
     table.WithHeight(10),
 )
+
+// Styling
+s := table.DefaultStyles()
+s.Header = s.Header.Bold(true).BorderBottom(true)
+s.Selected = s.Selected.Background(lipgloss.Color("205"))
+t.SetStyles(s)
+```
+
+### Text Input
+
+```go
+import "github.com/charmbracelet/bubbles/textinput"
+
+ti := textinput.New()
+ti.Placeholder = "Enter text..."
+ti.Focus()
+ti.CharLimit = 156
+ti.Width = 40
+
+// Password input
+ti.EchoMode = textinput.EchoPassword
+ti.EchoCharacter = '•'
+
+// Suggestions
+ti.ShowSuggestions = true
+ti.SetSuggestions([]string{"apple", "banana", "cherry"})
+```
+
+### Text Area
+
+```go
+import "github.com/charmbracelet/bubbles/textarea"
+
+ta := textarea.New()
+ta.Placeholder = "Enter description..."
+ta.SetWidth(60)
+ta.SetHeight(10)
+ta.Focus()
+
+// Character limit
+ta.CharLimit = 500
+ta.ShowLineNumbers = true
 ```
 
 ### Viewport (Scrollable Content)
@@ -262,285 +465,621 @@ t := table.New(
 ```go
 import "github.com/charmbracelet/bubbles/viewport"
 
-type model struct {
-    viewport viewport.Model
-    content  string
-}
+vp := viewport.New(80, 20)
+vp.SetContent(longContent)
 
-func (m model) Init() tea.Cmd {
-    return nil
-}
+// In Update
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case tea.WindowSizeMsg:
+        m.viewport.Width = msg.Width
+        m.viewport.Height = msg.Height - 4 // Leave room for header/footer
+    }
 
-func (m *model) setSize(width, height int) {
-    m.viewport.Width = width
-    m.viewport.Height = height - 4 // Leave room for header/footer
-    m.viewport.SetContent(m.content)
-}
-
-func (m model) View() string {
-    return fmt.Sprintf("%s\n%s\n%s",
-        m.headerView(),
-        m.viewport.View(),
-        m.footerView(),
-    )
+    var cmd tea.Cmd
+    m.viewport, cmd = m.viewport.Update(msg)
+    return m, cmd
 }
 ```
 
-### Progress Bar / Spinner
+### Progress Bar
 
 ```go
-import (
-    "github.com/charmbracelet/bubbles/progress"
-    "github.com/charmbracelet/bubbles/spinner"
-)
+import "github.com/charmbracelet/bubbles/progress"
 
-// Spinner for indeterminate loading
+// Gradient progress bar
+p := progress.New(progress.WithDefaultGradient())
+
+// Solid color
+p := progress.New(progress.WithSolidFill("#FF6B9D"))
+
+// Custom colors
+p := progress.New(progress.WithGradient("#FF6B9D", "#9D4EDD"))
+
+// Update progress (0.0 to 1.0)
+p.SetPercent(0.5)
+
+// Animated
+cmd := p.SetPercent(0.75) // Returns animation command
+```
+
+### Spinner
+
+```go
+import "github.com/charmbracelet/bubbles/spinner"
+
 s := spinner.New()
 s.Spinner = spinner.Dot
 s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 
-// Progress bar for determinate progress
-p := progress.New(progress.WithDefaultGradient())
-p.SetPercent(0.5)
+// Available spinners
+spinner.Line
+spinner.Dot
+spinner.MiniDot
+spinner.Jump
+spinner.Pulse
+spinner.Points
+spinner.Globe
+spinner.Moon
+spinner.Monkey
+spinner.Meter
+spinner.Hamburger
 ```
 
----
-
-## Styling with Lip Gloss
-
-### Basic Styles
+### File Picker
 
 ```go
-import "github.com/charmbracelet/lipgloss"
+import "github.com/charmbracelet/bubbles/filepicker"
 
-// Colors
-var (
-    primary   = lipgloss.Color("205")  // Pink
-    secondary = lipgloss.Color("240")  // Gray
-    success   = lipgloss.Color("82")   // Green
-    warning   = lipgloss.Color("214")  // Orange
-    danger    = lipgloss.Color("196")  // Red
-)
-
-// Styles
-var (
-    titleStyle = lipgloss.NewStyle().
-        Bold(true).
-        Foreground(primary).
-        MarginBottom(1)
-
-    selectedStyle = lipgloss.NewStyle().
-        Foreground(lipgloss.Color("229")).
-        Background(primary).
-        Padding(0, 1)
-
-    normalStyle = lipgloss.NewStyle().
-        Foreground(secondary)
-
-    helpStyle = lipgloss.NewStyle().
-        Foreground(lipgloss.Color("241"))
-)
+fp := filepicker.New()
+fp.CurrentDirectory, _ = os.UserHomeDir()
+fp.AllowedTypes = []string{".go", ".mod", ".sum"}
+fp.ShowHidden = false
 ```
 
-### Borders and Boxes
+### Timer / Stopwatch
 
 ```go
-var boxStyle = lipgloss.NewStyle().
-    Border(lipgloss.RoundedBorder()).
-    BorderForeground(lipgloss.Color("62")).
-    Padding(1, 2).
-    Width(40)
+import "github.com/charmbracelet/bubbles/timer"
+import "github.com/charmbracelet/bubbles/stopwatch"
 
-var dialogStyle = lipgloss.NewStyle().
-    Border(lipgloss.DoubleBorder()).
-    BorderForeground(lipgloss.Color("205")).
-    Padding(1, 2).
-    Align(lipgloss.Center)
+// Countdown timer
+t := timer.NewWithInterval(5*time.Minute, time.Second)
+
+// Stopwatch
+sw := stopwatch.NewWithInterval(time.Second)
 ```
 
-### Adaptive Colors (Light/Dark Terminal)
+### Help
 
 ```go
-var (
-    // AdaptiveColor picks based on terminal background
-    subtle = lipgloss.AdaptiveColor{Light: "#D9DCCF", Dark: "#383838"}
-    text   = lipgloss.AdaptiveColor{Light: "#1A1A1A", Dark: "#FAFAFA"}
-)
-
-var adaptiveStyle = lipgloss.NewStyle().
-    Foreground(text).
-    Background(subtle)
-```
-
----
-
-## Navigation Patterns
-
-### Focus Management
-
-```go
-type focusable int
-
-const (
-    focusSidebar focusable = iota
-    focusContent
-    focusDialog
-)
-
-type model struct {
-    focus focusable
-}
-
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-    switch msg := msg.(type) {
-    case tea.KeyMsg:
-        switch msg.String() {
-        case "tab":
-            m.focus = (m.focus + 1) % 3
-        case "shift+tab":
-            m.focus--
-            if m.focus < 0 {
-                m.focus = 2
-            }
-        }
-    }
-
-    // Route input to focused component
-    switch m.focus {
-    case focusSidebar:
-        return m.updateSidebar(msg)
-    case focusContent:
-        return m.updateContent(msg)
-    case focusDialog:
-        return m.updateDialog(msg)
-    }
-    return m, nil
-}
-```
-
-### Modal Dialogs
-
-```go
-type model struct {
-    showDialog bool
-    dialogMsg  string
-}
-
-func (m model) View() string {
-    main := m.mainView()
-
-    if m.showDialog {
-        dialog := m.dialogView()
-        // Center dialog over main content
-        return lipgloss.Place(
-            m.width, m.height,
-            lipgloss.Center, lipgloss.Center,
-            dialog,
-            lipgloss.WithWhitespaceChars(" "),
-            lipgloss.WithWhitespaceForeground(subtle),
-        )
-    }
-    return main
-}
-```
-
----
-
-## Keyboard Handling
-
-### Standard Key Bindings
-
-```go
-// Common conventions
-case "q", "ctrl+c":
-    return m, tea.Quit
-case "?":
-    m.showHelp = !m.showHelp
-case "esc":
-    m.showDialog = false
-case "enter":
-    // Confirm/select
-case "up", "k":
-    // Move up (vim-style k)
-case "down", "j":
-    // Move down (vim-style j)
-case "left", "h":
-    // Move left / collapse
-case "right", "l":
-    // Move right / expand
-case "g":
-    // Go to top
-case "G":
-    // Go to bottom
-case "/":
-    // Search
-case "n":
-    // Next search result
-case "N":
-    // Previous search result
-```
-
-### Key Bindings Help
-
-```go
+import "github.com/charmbracelet/bubbles/help"
 import "github.com/charmbracelet/bubbles/key"
 
 type keyMap struct {
     Up    key.Binding
     Down  key.Binding
-    Help  key.Binding
     Quit  key.Binding
 }
 
 func (k keyMap) ShortHelp() []key.Binding {
-    return []key.Binding{k.Help, k.Quit}
+    return []key.Binding{k.Up, k.Down, k.Quit}
 }
 
 func (k keyMap) FullHelp() [][]key.Binding {
     return [][]key.Binding{
         {k.Up, k.Down},
-        {k.Help, k.Quit},
+        {k.Quit},
     }
 }
 
-var keys = keyMap{
+keys := keyMap{
     Up: key.NewBinding(
         key.WithKeys("up", "k"),
-        key.WithHelp("↑/k", "move up"),
+        key.WithHelp("↑/k", "up"),
     ),
     Down: key.NewBinding(
         key.WithKeys("down", "j"),
-        key.WithHelp("↓/j", "move down"),
-    ),
-    Help: key.NewBinding(
-        key.WithKeys("?"),
-        key.WithHelp("?", "toggle help"),
+        key.WithHelp("↓/j", "down"),
     ),
     Quit: key.NewBinding(
         key.WithKeys("q", "ctrl+c"),
         key.WithHelp("q", "quit"),
     ),
 }
+
+h := help.New()
+h.View(keys) // Renders help text
+```
+
+---
+
+## Lip Gloss Styling
+
+### Basic Styles
+
+```go
+import "github.com/charmbracelet/lipgloss"
+
+style := lipgloss.NewStyle().
+    Bold(true).
+    Foreground(lipgloss.Color("205")).
+    Background(lipgloss.Color("236")).
+    Padding(1, 2).
+    Margin(1).
+    Width(40)
+
+output := style.Render("Hello, World!")
+```
+
+### Colors
+
+```go
+// ANSI 16 colors (most compatible)
+lipgloss.Color("1")  // Red
+lipgloss.Color("2")  // Green
+
+// ANSI 256 colors
+lipgloss.Color("99")  // Purple
+
+// True color (hex)
+lipgloss.Color("#FF6B9D")
+
+// Adaptive (light/dark terminal)
+lipgloss.AdaptiveColor{
+    Light: "#1A1A1A",
+    Dark:  "#FAFAFA",
+}
+
+// Complete adaptive (16/256/true color)
+lipgloss.CompleteAdaptiveColor{
+    Light: lipgloss.CompleteColor{
+        TrueColor: "#1A1A1A",
+        ANSI256:   "234",
+        ANSI:      "0",
+    },
+    Dark: lipgloss.CompleteColor{
+        TrueColor: "#FAFAFA",
+        ANSI256:   "255",
+        ANSI:      "15",
+    },
+}
+```
+
+### Borders
+
+```go
+// Border types
+lipgloss.NormalBorder()
+lipgloss.RoundedBorder()
+lipgloss.ThickBorder()
+lipgloss.DoubleBorder()
+lipgloss.HiddenBorder()
+
+style := lipgloss.NewStyle().
+    Border(lipgloss.RoundedBorder()).
+    BorderForeground(lipgloss.Color("62")).
+    BorderBackground(lipgloss.Color("236"))
+
+// Individual sides
+style.BorderTop(true).BorderBottom(true)
+```
+
+### Layout
+
+```go
+// Vertical join
+lipgloss.JoinVertical(
+    lipgloss.Left,   // Alignment
+    header,
+    content,
+    footer,
+)
+
+// Horizontal join
+lipgloss.JoinHorizontal(
+    lipgloss.Top,    // Alignment
+    sidebar,
+    main,
+)
+
+// Place (position within space)
+lipgloss.Place(
+    width, height,
+    lipgloss.Center, lipgloss.Center,
+    content,
+)
+
+// Place with whitespace options
+lipgloss.Place(
+    width, height,
+    lipgloss.Center, lipgloss.Center,
+    dialog,
+    lipgloss.WithWhitespaceChars("░"),
+    lipgloss.WithWhitespaceForeground(subtle),
+)
+```
+
+### Tables (Lip Gloss v2)
+
+```go
+import "github.com/charmbracelet/lipgloss/table"
+
+t := table.New().
+    Border(lipgloss.NormalBorder()).
+    BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
+    Headers("Name", "Age", "City").
+    Row("Alice", "30", "NYC").
+    Row("Bob", "25", "LA")
+
+fmt.Println(t)
+```
+
+---
+
+## Glamour: Markdown Rendering
+
+```go
+import "github.com/charmbracelet/glamour"
+
+// Simple render
+out, err := glamour.Render(markdown, "dark")
+
+// With options
+r, _ := glamour.NewTermRenderer(
+    glamour.WithAutoStyle(),        // Auto-detect light/dark
+    glamour.WithWordWrap(80),
+    glamour.WithEmoji(),
+)
+out, err := r.Render(markdown)
+
+// Available styles
+glamour.DarkStyle
+glamour.LightStyle
+glamour.PinkStyle
+glamour.DraculaStyle
+glamour.TokyoNightStyle
+glamour.NoTTYStyle
+```
+
+---
+
+## Wish: SSH Server
+
+Serve TUIs over SSH.
+
+```go
+import (
+    "github.com/charmbracelet/wish"
+    "github.com/charmbracelet/wish/bubbletea"
+)
+
+func main() {
+    s, err := wish.NewServer(
+        wish.WithAddress(":2222"),
+        wish.WithHostKeyPath(".ssh/term_info_ed25519"),
+        wish.WithMiddleware(
+            bubbletea.Middleware(teaHandler),
+            logging.Middleware(),
+        ),
+    )
+
+    log.Printf("Starting SSH server on :2222")
+    log.Fatal(s.ListenAndServe())
+}
+
+func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
+    return model{}, []tea.ProgramOption{tea.WithAltScreen()}
+}
+```
+
+### Wish Middleware
+
+```go
+// Git server
+wish.WithMiddleware(git.Middleware(repoDir, nil))
+
+// Access control
+wish.WithMiddleware(accesscontrol.Middleware())
+
+// Active terminal required
+wish.WithMiddleware(activeterm.Middleware())
+
+// Elapsed time logging
+wish.WithMiddleware(elapsed.Middleware())
+```
+
+---
+
+## Gum: Shell Script TUI
+
+Add TUI to shell scripts without Go.
+
+### Input
+
+```bash
+# Simple input
+NAME=$(gum input --placeholder "Enter name")
+
+# With suggestions
+COLOR=$(gum input --placeholder "Color" --suggestions "red,green,blue")
+
+# Password
+PASSWORD=$(gum input --password --placeholder "Password")
+```
+
+### Choose
+
+```bash
+# Single select
+COLOR=$(gum choose "red" "green" "blue")
+
+# Multi-select
+TOPPINGS=$(gum choose --no-limit "cheese" "pepperoni" "mushrooms")
+
+# With limit
+ITEMS=$(gum choose --limit 3 "a" "b" "c" "d" "e")
+```
+
+### Confirm
+
+```bash
+gum confirm "Are you sure?" && rm -rf ./data
+```
+
+### Filter
+
+```bash
+# Fuzzy filter from input
+ls | gum filter
+
+# With placeholder
+SELECTED=$(cat files.txt | gum filter --placeholder "Select file...")
+```
+
+### Spin
+
+```bash
+gum spin --spinner dot --title "Processing..." -- sleep 5
+```
+
+### Write (Multi-line)
+
+```bash
+DESCRIPTION=$(gum write --placeholder "Enter description...")
+```
+
+### Format
+
+```bash
+gum format "# Heading" "Some **bold** text"
+gum format --type code "func main() { }"
+```
+
+### Style
+
+```bash
+gum style --foreground 212 --bold "Hello"
+gum style --border double --padding "1 2" "Boxed content"
+```
+
+### File
+
+```bash
+FILE=$(gum file .)
+FILE=$(gum file --directory --all /path)
+```
+
+### Pager
+
+```bash
+cat large-file.txt | gum pager
+```
+
+### Log
+
+```bash
+gum log --level info "Starting process"
+gum log --level error "Something went wrong"
+```
+
+### Table
+
+```bash
+gum table < data.csv
+echo "Name,Age\nAlice,30\nBob,25" | gum table
+```
+
+---
+
+## Log: Structured Logging
+
+```go
+import "github.com/charmbracelet/log"
+
+// Basic usage
+log.Info("Starting server", "port", 8080)
+log.Warn("Connection slow", "latency", "200ms")
+log.Error("Failed to connect", "err", err)
+
+// Levels
+log.SetLevel(log.DebugLevel)
+
+// Custom logger
+logger := log.NewWithOptions(os.Stderr, log.Options{
+    ReportTimestamp: true,
+    TimeFormat:      time.Kitchen,
+    Prefix:          "myapp",
+})
+
+// With context
+logger.With("request_id", "abc123").Info("Handling request")
+
+// Formatters
+log.SetFormatter(log.JSONFormatter)
+log.SetFormatter(log.LogfmtFormatter)
+log.SetFormatter(log.TextFormatter) // default
+```
+
+---
+
+## Testing with teatest
+
+```go
+import "github.com/charmbracelet/x/teatest"
+
+func TestApp(t *testing.T) {
+    m := initialModel()
+    tm := teatest.NewTestModel(t, m, teatest.WithInitialTermSize(80, 24))
+
+    // Send key
+    tm.Send(tea.KeyMsg{Type: tea.KeyDown})
+
+    // Wait for condition
+    teatest.WaitFor(t, tm.Output(), func(bts []byte) bool {
+        return strings.Contains(string(bts), "expected text")
+    })
+
+    // Send quit
+    tm.Send(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("q")})
+
+    // Verify final output
+    tm.WaitFinished(t, teatest.WithFinalTimeout(time.Second))
+
+    out := tm.FinalOutput(t)
+    if !strings.Contains(string(out), "goodbye") {
+        t.Error("expected goodbye message")
+    }
+}
+```
+
+### Golden File Testing
+
+```go
+func TestView(t *testing.T) {
+    m := model{items: []string{"one", "two"}, cursor: 0}
+
+    got := m.View()
+
+    // First run creates golden file, subsequent runs compare
+    teatest.RequireEqualOutput(t, []byte(got))
+}
+```
+
+---
+
+## Mouse Support
+
+### Enable Mouse
+
+```go
+p := tea.NewProgram(model{}, tea.WithMouseCellMotion())
+// or
+p := tea.NewProgram(model{}, tea.WithMouseAllMotion())
+```
+
+### Handle Mouse Events
+
+```go
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case tea.MouseMsg:
+        switch msg.Button {
+        case tea.MouseButtonLeft:
+            if msg.Action == tea.MouseActionPress {
+                m.handleClick(msg.X, msg.Y)
+            }
+        case tea.MouseButtonWheelUp:
+            m.scroll(-1)
+        case tea.MouseButtonWheelDown:
+            m.scroll(1)
+        }
+    }
+    return m, nil
+}
+```
+
+### BubbleZone (Click Zones)
+
+```go
+import zone "github.com/lrstanley/bubblezone"
+
+// In View
+func (m model) View() string {
+    // Wrap clickable areas
+    button := zone.Mark("my-button", buttonStyle.Render("Click me"))
+    return button
+}
+
+// In Update
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case tea.MouseMsg:
+        if zone.Get("my-button").InBounds(msg) {
+            // Button was clicked
+        }
+    }
+    return m, nil
+}
+
+// Wrap program
+p := tea.NewProgram(model{}, tea.WithMouseCellMotion())
+zone.NewGlobal()
 ```
 
 ---
 
 ## Async Operations
 
-### Commands (Side Effects)
+### Commands
 
 ```go
-// Commands return messages
+// Fetch data
 func fetchData() tea.Msg {
     resp, err := http.Get("https://api.example.com/data")
     if err != nil {
         return errMsg{err}
     }
-    // Parse and return data message
+    defer resp.Body.Close()
+
+    var data Data
+    json.NewDecoder(resp.Body).Decode(&data)
     return dataMsg{data}
 }
 
-// Tick for periodic updates
+// Use in Init or Update
+func (m model) Init() tea.Cmd {
+    return fetchData
+}
+
+// Handle result
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+    switch msg := msg.(type) {
+    case dataMsg:
+        m.data = msg.data
+        m.loading = false
+    case errMsg:
+        m.err = msg.err
+    }
+    return m, nil
+}
+```
+
+### Batch Commands
+
+```go
+func (m model) Init() tea.Cmd {
+    return tea.Batch(
+        fetchUsers,
+        fetchProjects,
+        m.spinner.Tick,
+    )
+}
+```
+
+### Tick / Timer
+
+```go
 func tickCmd() tea.Cmd {
     return tea.Tick(time.Second, func(t time.Time) tea.Msg {
         return tickMsg(t)
@@ -549,39 +1088,105 @@ func tickCmd() tea.Cmd {
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     switch msg := msg.(type) {
-    case dataMsg:
-        m.data = msg.data
-        m.loading = false
-    case errMsg:
-        m.err = msg.err
-        m.loading = false
     case tickMsg:
-        m.lastTick = time.Time(msg)
+        m.elapsed++
         return m, tickCmd() // Keep ticking
     }
     return m, nil
 }
 ```
 
-### Loading States
+---
+
+## Layout Patterns
+
+### Full-Screen with Header/Footer
 
 ```go
-type model struct {
-    loading bool
-    spinner spinner.Model
+func (m model) View() string {
+    return lipgloss.JoinVertical(
+        lipgloss.Left,
+        m.headerView(),
+        m.contentView(),
+        m.footerView(),
+    )
 }
 
+func (m model) headerView() string {
+    title := titleStyle.Render("My Application")
+    return headerStyle.Width(m.width).Render(title)
+}
+
+func (m model) footerView() string {
+    help := "↑/↓: navigate • enter: select • q: quit"
+    return footerStyle.Width(m.width).Render(help)
+}
+```
+
+### Split Panes
+
+```go
 func (m model) View() string {
-    if m.loading {
-        return fmt.Sprintf("%s Loading...", m.spinner.View())
+    sidebar := sidebarStyle.
+        Width(30).
+        Height(m.height).
+        Render(m.sidebarView())
+
+    content := contentStyle.
+        Width(m.width - 30).
+        Height(m.height).
+        Render(m.contentView())
+
+    return lipgloss.JoinHorizontal(lipgloss.Top, sidebar, content)
+}
+```
+
+### Tabs
+
+```go
+func (m model) View() string {
+    var tabs []string
+    for i, t := range m.tabs {
+        if i == m.activeTab {
+            tabs = append(tabs, activeTabStyle.Render(t))
+        } else {
+            tabs = append(tabs, tabStyle.Render(t))
+        }
     }
-    return m.contentView()
+
+    tabBar := lipgloss.JoinHorizontal(lipgloss.Top, tabs...)
+    content := m.tabContent()
+
+    return lipgloss.JoinVertical(lipgloss.Left, tabBar, content)
+}
+```
+
+### Modal Dialog
+
+```go
+func (m model) View() string {
+    main := m.mainView()
+
+    if m.showDialog {
+        dialog := dialogStyle.Render(m.dialogContent())
+
+        // Center dialog over main
+        return lipgloss.Place(
+            m.width, m.height,
+            lipgloss.Center, lipgloss.Center,
+            dialog,
+            lipgloss.WithWhitespaceChars("░"),
+            lipgloss.WithWhitespaceForeground(lipgloss.Color("238")),
+        )
+    }
+
+    return main
 }
 ```
 
 ---
 
-## Terminal Size Handling
+## Window Size Handling
 
 ```go
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -591,9 +1196,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
         m.height = msg.Height
 
         // Resize components
+        m.list.SetSize(msg.Width, msg.Height-4)
         m.viewport.Width = msg.Width
-        m.viewport.Height = msg.Height - 4
-        m.list.SetSize(msg.Width, msg.Height)
+        m.viewport.Height = msg.Height - 6
+        m.help.Width = msg.Width
     }
     return m, nil
 }
@@ -603,11 +1209,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 ## Color Themes
 
-### ANSI Color Palette
+### ANSI Palette
 
 ```go
-// Basic 16 colors (most compatible)
 var (
+    // Standard 16 colors
     black   = lipgloss.Color("0")
     red     = lipgloss.Color("1")
     green   = lipgloss.Color("2")
@@ -616,75 +1222,151 @@ var (
     magenta = lipgloss.Color("5")
     cyan    = lipgloss.Color("6")
     white   = lipgloss.Color("7")
-    // Bright variants: 8-15
+
+    // Bright variants (8-15)
+    brightBlack   = lipgloss.Color("8")
+    brightRed     = lipgloss.Color("9")
+    brightGreen   = lipgloss.Color("10")
+    brightYellow  = lipgloss.Color("11")
+    brightBlue    = lipgloss.Color("12")
+    brightMagenta = lipgloss.Color("13")
+    brightCyan    = lipgloss.Color("14")
+    brightWhite   = lipgloss.Color("15")
 )
-
-// 256 colors
-var purple = lipgloss.Color("99")
-
-// True color (hex)
-var customPink = lipgloss.Color("#FF6B9D")
 ```
 
 ### Theme Structure
 
 ```go
 type Theme struct {
-    Primary    lipgloss.Color
-    Secondary  lipgloss.Color
-    Background lipgloss.Color
-    Text       lipgloss.Color
-    Muted      lipgloss.Color
-    Success    lipgloss.Color
-    Warning    lipgloss.Color
-    Error      lipgloss.Color
+    Primary    lipgloss.TerminalColor
+    Secondary  lipgloss.TerminalColor
+    Background lipgloss.TerminalColor
+    Foreground lipgloss.TerminalColor
+    Muted      lipgloss.TerminalColor
+    Success    lipgloss.TerminalColor
+    Warning    lipgloss.TerminalColor
+    Error      lipgloss.TerminalColor
+    Border     lipgloss.TerminalColor
 }
 
 var DarkTheme = Theme{
     Primary:    lipgloss.Color("205"),
     Secondary:  lipgloss.Color("39"),
     Background: lipgloss.Color("236"),
-    Text:       lipgloss.Color("252"),
+    Foreground: lipgloss.Color("252"),
     Muted:      lipgloss.Color("241"),
     Success:    lipgloss.Color("82"),
     Warning:    lipgloss.Color("214"),
     Error:      lipgloss.Color("196"),
+    Border:     lipgloss.Color("238"),
+}
+
+var LightTheme = Theme{
+    Primary:    lipgloss.Color("205"),
+    Secondary:  lipgloss.Color("33"),
+    Background: lipgloss.Color("255"),
+    Foreground: lipgloss.Color("234"),
+    Muted:      lipgloss.Color("245"),
+    Success:    lipgloss.Color("34"),
+    Warning:    lipgloss.Color("172"),
+    Error:      lipgloss.Color("160"),
+    Border:     lipgloss.Color("250"),
 }
 ```
 
 ---
 
-## Testing TUI Apps
+## VHS: Terminal Recording
 
-### Model Testing
+Create demo GIFs with `.tape` files:
 
-```go
-func TestModel_Update(t *testing.T) {
-    m := initialModel()
+```tape
+# demo.tape
+Output demo.gif
 
-    // Simulate key press
-    newModel, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
+Set FontSize 14
+Set Width 1200
+Set Height 600
+Set Theme "Catppuccin Mocha"
 
-    model := newModel.(model)
-    if model.cursor != 1 {
-        t.Errorf("expected cursor at 1, got %d", model.cursor)
-    }
-}
+Type "my-cli --help"
+Enter
+Sleep 2s
+
+Type "my-cli create project"
+Enter
+Sleep 1s
+
+Type "my-project"
+Enter
+Sleep 3s
 ```
 
-### View Testing
+Run: `vhs demo.tape`
+
+---
+
+## Freeze: Terminal Screenshots
+
+```bash
+# Screenshot command output
+freeze --execute "my-cli --help" -o help.png
+
+# Screenshot code file
+freeze main.go -o code.png
+
+# Interactive mode
+freeze --interactive
+
+# With options
+freeze main.go \
+    --theme "catppuccin-mocha" \
+    --window \
+    --shadow.blur 20 \
+    --font.family "JetBrains Mono" \
+    -o screenshot.png
+```
+
+---
+
+## Accessibility
+
+### Screen Reader Support (Huh)
 
 ```go
-func TestModel_View(t *testing.T) {
-    m := model{items: []string{"one", "two"}, cursor: 0}
-
-    view := m.View()
-
-    if !strings.Contains(view, "> one") {
-        t.Error("expected cursor on first item")
-    }
-}
+form := huh.NewForm(groups...).WithAccessible(true)
 ```
+
+### High Contrast
+
+```go
+// Use adaptive colors
+text := lipgloss.AdaptiveColor{Light: "#000000", Dark: "#FFFFFF"}
+
+// Ensure sufficient contrast
+style := lipgloss.NewStyle().
+    Foreground(lipgloss.Color("15")).  // White
+    Background(lipgloss.Color("0"))    // Black
+```
+
+### Keyboard Navigation
+
+- All actions must be keyboard-accessible
+- Provide visible focus indicators
+- Support standard navigation (arrows, tab, enter, esc)
+- Document keybindings with help component
+
+---
+
+## Performance
+
+- **Minimize re-renders**: Only update what changed
+- **Use viewports**: Don't render off-screen content
+- **Cache styles**: Create styles once, reuse
+- **Batch commands**: Use `tea.Batch()` for multiple concurrent operations
+- **Profile**: Use `pprof` for bottlenecks
+- **Memoize**: TextArea component now includes memoization (v2)
 
 ---
 
@@ -694,21 +1376,43 @@ func TestModel_View(t *testing.T) {
 
 ```python
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Static
+from textual.widgets import Header, Footer, Static, Button
+from textual.containers import Container
 
 class MyApp(App):
+    CSS = """
+    Screen {
+        layout: vertical;
+    }
+    #main {
+        height: 1fr;
+    }
+    """
+
     BINDINGS = [("q", "quit", "Quit")]
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Static("Hello, World!")
+        yield Container(
+            Static("Hello, World!"),
+            Button("Click me", id="btn"),
+            id="main"
+        )
         yield Footer()
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        self.notify("Button clicked!")
 ```
 
 ### Ratatui (Rust)
 
 ```rust
-fn ui(f: &mut Frame, app: &App) {
+use ratatui::{
+    prelude::*,
+    widgets::{Block, Borders, Paragraph},
+};
+
+fn ui(frame: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -716,43 +1420,56 @@ fn ui(f: &mut Frame, app: &App) {
             Constraint::Min(1),
             Constraint::Length(3),
         ])
-        .split(f.size());
+        .split(frame.area());
 
-    let block = Block::default().borders(Borders::ALL).title("Header");
-    f.render_widget(block, chunks[0]);
+    let header = Block::default()
+        .borders(Borders::ALL)
+        .title("Header");
+    frame.render_widget(header, chunks[0]);
+
+    let content = Paragraph::new(app.content.clone())
+        .block(Block::default().borders(Borders::ALL));
+    frame.render_widget(content, chunks[1]);
 }
 ```
 
 ### Ink (React for Terminal)
 
 ```tsx
-import React from 'react';
-import {render, Box, Text} from 'ink';
+import React, { useState } from 'react';
+import { render, Box, Text, useInput } from 'ink';
 
-const App = () => (
-    <Box flexDirection="column">
-        <Text color="green">Hello, World!</Text>
-    </Box>
-);
+const App = () => {
+    const [selected, setSelected] = useState(0);
+    const items = ['Item 1', 'Item 2', 'Item 3'];
+
+    useInput((input, key) => {
+        if (key.upArrow) setSelected(s => Math.max(0, s - 1));
+        if (key.downArrow) setSelected(s => Math.min(items.length - 1, s + 1));
+    });
+
+    return (
+        <Box flexDirection="column">
+            {items.map((item, i) => (
+                <Text key={i} color={i === selected ? 'green' : undefined}>
+                    {i === selected ? '> ' : '  '}{item}
+                </Text>
+            ))}
+        </Box>
+    );
+};
 
 render(<App />);
 ```
 
 ---
 
-## Performance Considerations
+## Resources
 
-- **Minimize re-renders**: Only update changed portions of the view
-- **Use viewport for large content**: Don't render off-screen content
-- **Batch updates**: Combine multiple state changes before re-rendering
-- **Profile with `pprof`**: Identify bottlenecks in update/view cycles
-- **Cache computed styles**: Lip Gloss styles can be expensive to create
-
----
-
-## Accessibility
-
-- **High contrast colors**: Ensure text is readable
-- **Keyboard-only navigation**: All actions accessible via keyboard
-- **Screen reader considerations**: Terminal apps have limited screen reader support, but clear text helps
-- **Status announcements**: Use clear text updates for state changes
+- [Charm Homepage](https://charm.sh)
+- [Bubble Tea Docs](https://pkg.go.dev/github.com/charmbracelet/bubbletea)
+- [Bubble Tea Examples](https://github.com/charmbracelet/bubbletea/tree/master/examples)
+- [Bubbles Components](https://github.com/charmbracelet/bubbles)
+- [Lip Gloss Docs](https://pkg.go.dev/github.com/charmbracelet/lipgloss)
+- [Huh Forms](https://github.com/charmbracelet/huh)
+- [Awesome Bubble Tea](https://github.com/charmbracelet/bubbletea#bubble-tea-in-the-wild)
