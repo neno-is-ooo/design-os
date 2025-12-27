@@ -123,9 +123,10 @@ For each selected domain, create a file at `product/architecture/[domain].md` wi
 ### Pattern 1: [Name]
 [Description with code examples]
 
-```[language]
-// Example code showing the pattern
-```
+    // Example code showing the pattern (use 4-space indent for code in templates)
+    func example() {
+        // ...
+    }
 
 ### Pattern 2: [Name]
 ...

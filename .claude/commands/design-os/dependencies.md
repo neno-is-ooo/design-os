@@ -44,10 +44,10 @@ For significant dependencies, evaluate:
 
 ### Library Evaluation Criteria
 - **Maintenance**: Is it actively maintained? When was last release?
-- **Popularity**: GitHub stars, npm downloads, community size
+- **Popularity**: GitHub stars, community size, registry downloads (npm, SwiftPM, CocoaPods, crates.io, PyPI as appropriate)
 - **Documentation**: Is it well-documented?
-- **License**: Compatible with your project?
-- **Size**: Bundle size impact (for web), binary size (for native)
+- **License**: Compatible with your project and distribution model?
+- **Size**: Bundle size (web), binary size (native), or dependency tree complexity
 - **Platform Support**: Does it work on your target platform(s)?
 
 ### Service Evaluation Criteria

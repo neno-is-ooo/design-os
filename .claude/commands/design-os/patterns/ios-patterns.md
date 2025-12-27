@@ -1,6 +1,8 @@
-# iOS Native Design Patterns
+# iOS Native Design Patterns (SwiftUI-First)
 
-Reference patterns for iOS native applications using Swift and UIKit/SwiftUI.
+Reference patterns for iOS native applications using Swift and SwiftUI. These patterns target iOS 17+ with SwiftUI as the primary UI framework.
+
+> **Note**: For UIKit-based apps or iOS 16 and earlier, adapt these patterns accordingly. UIKit equivalents are noted where significantly different.
 
 ## Navigation Patterns
 

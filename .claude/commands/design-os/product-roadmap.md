@@ -22,10 +22,22 @@ Read the product overview and analyze:
 
 ### Propose Sections
 
-Based on your analysis, propose 3-5 sections that represent:
-- **Navigation items** - main areas of the product UI
-- **Roadmap phases** - logical order for building
-- **Self-contained feature areas** - each can be designed and built independently
+Based on your analysis and the platform, propose 3-5 sections that represent:
+
+**For UI platforms (Web, Desktop, Mobile):**
+- Main areas of the product interface
+- Logical order for building
+- Self-contained feature areas
+
+**For CLI tools:**
+- Command groups or major subcommands
+- Logical order for implementation
+- Independent functional areas
+
+**For API/Backend:**
+- Endpoint groups or resource collections
+- Logical order for building
+- Self-contained service areas
 
 Present your proposal:
 
@@ -109,7 +121,9 @@ Once approved, create `/product/product-roadmap.md` with this exact format:
 
 **Risk areas flagged:** [Summary of any high-risk items, or 'None identified']
 
-**Next step:** Run `/data-model` to define the core entities and relationships in your product. This establishes a shared vocabulary that keeps your sections consistent."
+**Next steps:**
+1. Run `/data-model` to define the core entities and relationships
+2. Run `/dependencies` to evaluate external libraries and services (recommended for projects with external integrations)"
 
 ---
 

@@ -72,9 +72,9 @@ mytool --output=file.txt
 ### Standard Flags
 Always support these:
 - `-h, --help`: Show help
-- `-v, --version`: Show version
+- `-V, --version`: Show version (uppercase V to avoid conflict with verbose)
 - `-q, --quiet`: Suppress output
-- `--verbose`: Increase output
+- `-v, --verbose`: Increase output (can stack: `-vv`, `-vvv`)
 - `--dry-run`: Preview without executing
 - `--config FILE`: Custom config file
 

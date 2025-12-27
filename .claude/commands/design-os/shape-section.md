@@ -32,23 +32,30 @@ Wait for their response. The user may provide raw notes or ask to proceed with q
 
 ## Step 4: Ask Clarifying Questions
 
-Use the AskUserQuestion tool to ask 4-6 targeted questions to define:
+Use the AskUserQuestion tool to ask 4-6 targeted questions. Adapt based on the platform:
 
+### For UI Platforms (Web, Desktop, Mobile):
 - **Main user actions/tasks** - What can users do in this section?
 - **Information to display** - What data and content needs to be shown?
 - **Key user flows** - What are the step-by-step interactions?
 - **UI patterns** - Any specific interactions, layouts, or components needed?
 - **Scope boundaries** - What should be explicitly excluded?
 
-Example questions (adapt based on their input and the section):
-- "What are the main actions a user can take in this section?"
-- "What information needs to be displayed on the primary view?"
-- "Walk me through the main user flow - what happens step by step?"
-- "Are there any specific UI patterns you want to use (e.g., tables, cards, modals)?"
-- "What's intentionally out of scope for this section?"
-- "Are there multiple views needed (e.g., list view and detail view)?"
+### For CLI Tools:
+- **Commands/subcommands** - What commands belong to this section?
+- **Flags and arguments** - What options does each command accept?
+- **Input/output** - What data comes in and what output is produced?
+- **Error cases** - What errors can occur and how are they reported?
+- **Scope boundaries** - What's explicitly out of scope?
 
-Ask questions one or two at a time, conversationally. Focus on user experience and interface requirements - no backend or database details.
+### For API/Backend:
+- **Endpoints** - What routes belong to this section?
+- **Request/response** - What data structures are used?
+- **Authentication** - What authorization is required?
+- **Error cases** - What errors can occur and how are they returned?
+- **Scope boundaries** - What's explicitly out of scope?
+
+Ask questions one or two at a time, conversationally.
 
 ## Step 5: Technical Feasibility Check
 
@@ -96,17 +103,24 @@ Example questions:
 
 Document 3-5 core test scenarios that will be included in the spec.
 
-## Step 7: Ask About Shell Configuration
+## Step 7: Ask About Shell Configuration (UI Platforms Only)
 
-If a shell design has been created for this project (check if `/src/shell/components/AppShell.tsx` or platform-equivalent exists), ask the user about shell usage:
+**Skip this step for CLI and API projects.**
 
-"Should this section's screen designs be displayed **inside the app shell** (with navigation header), or should they be **standalone pages** (without the shell)?
+For UI platforms, check if a shell design exists:
+- **Web**: Check for `/src/shell/components/AppShell.tsx`
+- **macOS**: Check for window controller or main window spec
+- **iOS**: Check for tab bar or navigation structure
 
-Most sections use the app shell, but some pages like public-facing views, landing pages, or embedded widgets should be standalone."
+If a shell exists, ask:
+
+"Should this section be displayed **inside the app shell** (with navigation), or as a **standalone view** (without the shell)?
+
+Most sections use the app shell, but some views like onboarding, public pages, or embedded widgets should be standalone."
 
 Use AskUserQuestion with options:
 - "Inside app shell" - The default for most in-app sections
-- "Standalone (no shell)" - For public pages, landing pages, or embeds
+- "Standalone (no shell)" - For public pages, onboarding, or embeds
 
 If no shell design exists yet, skip this question and default to using the shell.
 

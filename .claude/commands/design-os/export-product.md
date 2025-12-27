@@ -2,27 +2,46 @@
 
 You are helping the user export their complete product design as a handoff package for implementation. This generates all files needed to build the product in a real codebase.
 
+## Step 0: Determine Platform
+
+Read `/product/product-overview.md` to determine the platform. The export format varies by platform:
+
+- **Web Application**: React/Tailwind components, CSS tokens
+- **macOS/iOS Native**: Swift type definitions, UI specifications
+- **CLI Tool**: Command specifications, no components
+- **API/Backend**: Endpoint specifications, data schemas
+
+Adapt the following steps based on platform.
+
 ## Step 1: Check Prerequisites
 
-Verify the minimum requirements exist:
+Verify the minimum requirements exist (adapt based on platform):
 
-**Required:**
-- `/product/product-overview.md` — Product overview
+**Required (all platforms):**
+- `/product/product-overview.md` — Product overview with platform
 - `/product/product-roadmap.md` — Sections defined
+- At least one section spec in `product/sections/[section-id]/spec.md`
+
+**Required for UI platforms (Web, Desktop, Mobile):**
 - At least one section with screen designs in `src/sections/[section-id]/`
 
 **Recommended (show warning if missing):**
 - `/product/data-model/data-model.md` — Global data model
+- `/product/dependencies.md` — External dependencies
+- `/product/architecture/` — Architecture documentation
+
+**For Web/Desktop only:**
 - `/product/design-system/colors.json` — Color tokens
 - `/product/design-system/typography.json` — Typography tokens
-- `src/shell/components/AppShell.tsx` — Application shell
+- `src/shell/components/` — Application shell
 
 If required files are missing:
 
 "To export your product, you need at minimum:
 - A product overview (`/product-vision`)
 - A roadmap with sections (`/product-roadmap`)
-- At least one section with screen designs
+- Section specifications (`/shape-section`)
+- [For UI platforms] At least one screen design
 
 Please complete these first."
 
@@ -32,8 +51,10 @@ If recommended files are missing, show warnings but continue:
 
 "Note: Some recommended items are missing:
 - [ ] Data model — Run `/data-model` for consistent entity definitions
-- [ ] Design tokens — Run `/design-tokens` for consistent styling
-- [ ] Application shell — Run `/design-shell` for navigation structure
+- [ ] Dependencies — Run `/dependencies` to document external libraries
+- [ ] Architecture — Run `/architecture` for technical patterns
+- [Web only] Design tokens — Run `/design-tokens` for consistent styling
+- [UI platforms] Application shell — Run `/design-shell` for navigation structure
 
 You can proceed without these, but they help ensure a complete handoff."
 
@@ -41,23 +62,27 @@ You can proceed without these, but they help ensure a complete handoff."
 
 Read all relevant files:
 
-1. `/product/product-overview.md` — Product name, description, features
-2. `/product/product-roadmap.md` — List of sections in order
+1. `/product/product-overview.md` — Product name, description, platform, features
+2. `/product/product-roadmap.md` — List of sections with complexity/dependencies
 3. `/product/data-model/data-model.md` (if exists)
-4. `/product/design-system/colors.json` (if exists)
-5. `/product/design-system/typography.json` (if exists)
-6. `/product/shell/spec.md` (if exists)
-7. For each section: `spec.md`, `data.json`, `types.ts`
-8. List screen design components in `src/sections/` and `src/shell/`
+4. `/product/dependencies.md` (if exists)
+5. `/product/architecture/` — All architecture docs (if exists)
+6. `/product/design-system/colors.json` (if exists, web only)
+7. `/product/design-system/typography.json` (if exists, web only)
+8. `/product/shell/spec.md` (if exists, UI platforms)
+9. For each section: `spec.md`, `data.json`, `types.ts` (or `.swift`)
+10. List screen design components in `src/sections/` and `src/shell/` (UI platforms)
 
 ## Step 3: Create Export Directory Structure
 
-Create the `product-plan/` directory with this structure:
+Create the `product-plan/` directory. Structure varies by platform:
+
+### Web Application Structure
 
 ```
 product-plan/
 ├── README.md                    # Quick start guide
-├── product-overview.md          # Product summary (always provide)
+├── product-overview.md          # Product summary with platform
 │
 ├── prompts/                     # Ready-to-use prompts for coding agents
 │   ├── one-shot-prompt.md       # Prompt for full implementation
@@ -68,15 +93,20 @@ product-plan/
 │   └── incremental/             # For milestone-by-milestone implementation
 │       ├── 01-foundation.md
 │       ├── 02-[first-section].md
-│       ├── 03-[second-section].md
 │       └── ...
 │
-├── design-system/               # Design tokens
+├── architecture/                # Technical architecture
+│   ├── overview.md
+│   └── [domain].md              # State management, etc.
+│
+├── dependencies.md              # External libraries and services
+│
+├── design-system/               # Design tokens (web only)
 │   ├── tokens.css
 │   ├── tailwind-colors.md
 │   └── fonts.md
 │
-├── data-model/                  # Data model
+├── data-model/
 │   ├── README.md
 │   ├── types.ts
 │   └── sample-data.json
@@ -85,21 +115,85 @@ product-plan/
 │   ├── README.md
 │   ├── components/
 │   │   ├── AppShell.tsx
-│   │   ├── MainNav.tsx
-│   │   ├── UserMenu.tsx
-│   │   └── index.ts
+│   │   └── ...
 │   └── screenshot.png (if exists)
 │
-└── sections/                    # Section components
+└── sections/
     └── [section-id]/
         ├── README.md
-        ├── tests.md               # Test-writing instructions for TDD
+        ├── tests.md
         ├── components/
-        │   ├── [Component].tsx
-        │   └── index.ts
         ├── types.ts
         ├── sample-data.json
         └── screenshot.png (if exists)
+```
+
+### Native (macOS/iOS) Structure
+
+```
+product-plan/
+├── README.md
+├── product-overview.md
+├── prompts/
+├── instructions/
+├── architecture/                # Critical for native
+│   ├── overview.md
+│   └── [domain].md
+├── dependencies.md              # Swift packages, frameworks
+├── data-model/
+│   ├── README.md
+│   ├── types.swift              # Swift type definitions
+│   └── sample-data.json
+├── shell/
+│   └── spec.md                  # Window/navigation specification
+└── sections/
+    └── [section-id]/
+        ├── README.md
+        ├── spec.md              # UI specification
+        ├── tests.md
+        ├── types.swift
+        └── sample-data.json
+```
+
+### CLI Tool Structure
+
+```
+product-plan/
+├── README.md
+├── product-overview.md
+├── prompts/
+├── instructions/
+├── architecture/
+├── dependencies.md
+├── data-model/
+│   ├── types.ts (or language-appropriate)
+│   └── sample-data.json
+└── sections/                    # Command groups
+    └── [command-group]/
+        ├── README.md
+        ├── spec.md              # Command specifications
+        └── tests.md
+```
+
+### API/Backend Structure
+
+```
+product-plan/
+├── README.md
+├── product-overview.md
+├── prompts/
+├── instructions/
+├── architecture/
+├── dependencies.md
+├── data-model/
+│   ├── schema.md               # Database schema
+│   ├── types.ts
+│   └── sample-data.json
+└── sections/                    # Endpoint groups
+    └── [endpoint-group]/
+        ├── README.md
+        ├── spec.md              # Endpoint specifications
+        └── tests.md
 ```
 
 ## Step 4: Generate product-overview.md
@@ -109,24 +203,34 @@ Create `product-plan/product-overview.md`:
 ```markdown
 # [Product Name] — Product Overview
 
+## Platform
+
+[Platform from product-overview.md - e.g., "Web Application (React/Tailwind)", "macOS Native (Swift/AppKit)", "CLI Tool"]
+
 ## Summary
 
 [Product description from product-overview.md]
 
 ## Planned Sections
 
-[Ordered list of sections from roadmap with descriptions]
+[Ordered list of sections from roadmap with complexity]
 
-1. **[Section 1]** — [Description]
-2. **[Section 2]** — [Description]
-...
+| Section | Description | Complexity |
+|---------|-------------|------------|
+| [Section 1] | [Description] | [Low/Medium/High] |
+| [Section 2] | [Description] | [Low/Medium/High] |
 
 ## Data Model
 
-[If data model exists: list entity names]
+[If data model exists: list entity names and key relationships]
 [If not: "Data model to be defined during implementation"]
 
-## Design System
+## Key Dependencies
+
+[If dependencies.md exists: list major external libraries]
+[If not: "Dependencies to be evaluated during implementation"]
+
+## Design System (Web only)
 
 **Colors:**
 - Primary: [color or "Not defined"]
@@ -138,17 +242,34 @@ Create `product-plan/product-overview.md`:
 - Body: [font or "Not defined"]
 - Mono: [font or "Not defined"]
 
+[For non-web platforms, omit this section or note "N/A - using system design language"]
+
+## Architecture
+
+[If architecture exists: brief summary of key architectural decisions]
+[If not: "Architecture to be defined during implementation"]
+
+See `product-plan/architecture/` for detailed documentation.
+
 ## Implementation Sequence
 
 Build this product in milestones:
 
-1. **Foundation** — Set up design tokens, data model types, and application shell
+1. **Foundation** — Set up data model types, [platform-specific foundation]
 2. **[Section 1]** — [Brief description]
 3. **[Section 2]** — [Brief description]
 ...
 
 Each milestone has a dedicated instruction document in `product-plan/instructions/`.
 ```
+
+## Step 4b: Copy Architecture and Dependencies
+
+If `/product/architecture/` exists:
+- Copy all files to `product-plan/architecture/`
+
+If `/product/dependencies.md` exists:
+- Copy to `product-plan/dependencies.md`
 
 ## Step 5: Generate Milestone Instructions
 
@@ -1096,10 +1217,18 @@ The components are props-based and portable — they accept data and callbacks, 
 
 ## Important Notes
 
-- Always transform import paths when copying components
+- **Platform awareness**: Adapt all outputs based on the platform specified in product-overview.md
+- **Architecture is critical**: Include architecture docs for all platforms — they're especially important for native and CLI
+- **Dependencies matter**: Include dependencies.md to document external library choices
+- Always transform import paths when copying components (web only)
 - Include `product-overview.md` context with every implementation session
 - Use the pre-written prompts — they prompt for important clarifying questions
-- Screenshots provide visual reference for fidelity checking
+- Screenshots provide visual reference for fidelity checking (UI platforms only)
 - Sample data files are for testing before real APIs are built
 - The export is self-contained — no dependencies on Design OS
-- Components are portable — they work with any React setup
+
+**Platform-specific notes:**
+- **Web**: Components are React/Tailwind, portable to any React setup
+- **Native**: Export Swift type definitions and UI specs, not components
+- **CLI**: Export command specs and test scenarios, no visual components
+- **API**: Export endpoint specs and data schemas

@@ -17,18 +17,18 @@ After receiving their initial input, use the AskUserQuestion tool to determine t
 "What platform are you building for?"
 
 Options:
-- **Web Application** — React, Vue, Svelte, or other web framework
+- **Web Application** — React with Tailwind CSS (exports are React/Tailwind-specific)
 - **macOS Native** — Swift with AppKit or SwiftUI
 - **iOS Native** — Swift with UIKit or SwiftUI
-- **Cross-Platform Desktop** — Electron, Tauri, or similar
-- **Mobile Cross-Platform** — React Native, Flutter
+- **Cross-Platform Desktop** — Electron or Tauri (exports use React/Tailwind)
+- **Mobile Cross-Platform** — React Native or Flutter
 - **CLI Tool** — Command-line application
 - **API/Backend** — Server-side service
 
 **Important:** The platform choice affects:
 - Which design phases apply (e.g., no shell design for CLI tools)
 - Terminology used (views vs screens, windows vs pages)
-- Export format and handoff structure
+- Export format (React/Tailwind for web, Swift types for native, specs for CLI/API)
 - Available UI patterns and components
 
 Store the platform choice for use throughout the design process.

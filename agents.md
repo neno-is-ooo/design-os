@@ -1,8 +1,45 @@
 # Agent Directives for Design OS
 
-Design OS is a **product planning and design tool** that helps users define their product vision, structure their data model, design their UI, and prepare export packages for implementation in a separate codebase.
+Design OS is a **product planning methodology** that helps users define their product vision, structure their data model, design their UI, and prepare export packages for implementation.
 
-> **Important**: Design OS is a planning tool, not the end product codebase. The screen designs and components generated here are meant to be exported and integrated into your actual product's codebase.
+> **CRITICAL**: Design OS is a methodology, not a starter template. Do NOT edit source files directly. Run the planning commands (`/product-vision`, `/product-roadmap`, etc.) to define your product through a structured conversation.
+
+---
+
+## How to Use Design OS
+
+**Start by running `/product-vision`** — this begins the planning flow.
+
+Do NOT:
+- Edit `package.json`, `index.html`, or source files directly
+- Start writing components before completing the planning phases
+- Treat this as a boilerplate to modify
+
+DO:
+- Run slash commands in sequence to define the product
+- Let the methodology guide you through structured planning
+- Wait until `/export-product` to generate implementation-ready code
+
+---
+
+## Phase Applicability by Platform
+
+Not all phases apply to all platforms:
+
+| Phase | Web | macOS/iOS | CLI | API |
+|-------|-----|-----------|-----|-----|
+| `/product-vision` | Yes | Yes | Yes | Yes |
+| `/product-roadmap` | Yes | Yes | Yes | Yes |
+| `/data-model` | Yes | Yes | Yes | Yes |
+| `/dependencies` | Yes | Yes | Yes | Yes |
+| `/design-tokens` | Yes | Yes | Skip | Skip |
+| `/design-shell` | Yes | Yes | Skip | Skip |
+| `/shape-section` | Yes | Yes | Adapted* | Adapted* |
+| `/architecture` | Yes | Yes | Yes | Yes |
+| `/design-screen` | Yes | Yes | Skip | Skip |
+| `/export-product` | Yes | Yes | Yes | Yes |
+
+*For CLI: sections become commands/subcommands. For API: sections become endpoint groups.
 
 ---
 
@@ -77,11 +114,14 @@ Design the persistent navigation and layout that wraps all sections.
 ### 7. For Each Section:
 - `/shape-section` — Define the specification (includes **technical feasibility checks** and **test scenarios**)
 - `/sample-data` — Create sample data and types
-- `/design-screen` — Create screen designs
-- `/screenshot-design` — Capture screenshots
+
+**Platform variations:**
+- **Web/Native**: Sections are UI views/screens
+- **CLI**: Sections are commands or subcommand groups
+- **API**: Sections are endpoint groups or resource collections
 
 ### 8. Architecture (`/architecture`)
-Plan the technical architecture based on platform, dependencies, and section requirements.
+Plan the technical architecture based on platform, dependencies, and section requirements. Run this **after shaping sections but before screen designs**.
 **Output:** `product/architecture/`
 
 Includes:
@@ -95,7 +135,13 @@ Includes:
 - iOS: `.claude/commands/design-os/patterns/ios-patterns.md`
 - CLI: `.claude/commands/design-os/patterns/cli-patterns.md`
 
-### 9. Export (`/export-product`)
+### 9. Screen Design (UI platforms only)
+- `/design-screen` — Create screen designs
+- `/screenshot-design` — Capture screenshots
+
+*Skip for CLI and API projects.*
+
+### 10. Export (`/export-product`)
 Generate the complete export package with all components, types, architecture docs, and handoff documentation.
 **Output:** `product-plan/`
 
@@ -170,9 +216,9 @@ product-plan/                      # Export package (generated)
 
 ---
 
-## Design Requirements
+## Design Requirements by Platform
 
-When creating screen designs, follow these guidelines:
+### Web Applications (React/Tailwind)
 
 - **Mobile Responsive**: Use Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`) to ensure layouts adapt properly across screen sizes.
 
@@ -184,19 +230,34 @@ When creating screen designs, follow these guidelines:
 
 - **No Navigation in Section Screen Designs**: Section screen designs should not include navigation chrome. The shell handles all navigation.
 
----
+**Tailwind CSS v4 Directives:**
+- We always use Tailwind CSS v4 (not v3). Do not reference or create v3 patterns.
+- No `tailwind.config.js` — Tailwind CSS v4 does not use a config file.
+- Use built-in utility classes; avoid custom CSS.
+- Use built-in colors (e.g., `stone-500`, `lime-400`); avoid defining custom colors.
 
-## Tailwind CSS Directives
+### Native Applications (macOS/iOS)
 
-These rules apply to both the Design OS application and all screen designs/components it generates:
+- **System Design Language**: Follow Apple Human Interface Guidelines.
+- **Light & Dark Mode**: Support system appearance via `@Environment(\.colorScheme)` or `NSApp.effectiveAppearance`.
+- **Dynamic Type**: Support user font size preferences.
+- **Props-Based Views**: Views should accept data via parameters, not global state.
+- **Platform Patterns**: Reference `.claude/commands/design-os/patterns/macos-patterns.md` or `ios-patterns.md`.
 
-- **Tailwind CSS v4**: We always use Tailwind CSS v4 (not v3). Do not reference or create v3 patterns.
+### CLI Tools
 
-- **No tailwind.config.js**: Tailwind CSS v4 does not use a `tailwind.config.js` file. Never reference, create, or modify one.
+- **No visual design phases** — skip `/design-tokens`, `/design-shell`, `/design-screen`.
+- **Command Structure**: Define commands, subcommands, flags, and arguments.
+- **Output Formatting**: Support human-readable, JSON, and quiet modes.
+- **Error Handling**: Use appropriate exit codes and error messages.
+- **Reference**: `.claude/commands/design-os/patterns/cli-patterns.md`.
 
-- **Use Built-in Utility Classes**: Avoid writing custom CSS. Stick to using Tailwind's built-in utility classes for all styling.
+### API/Backend
 
-- **Use Built-in Colors**: Avoid defining custom colors. Use Tailwind's built-in color utility classes (e.g., `stone-500`, `lime-400`, `red-600`).
+- **No visual design phases** — skip `/design-tokens`, `/design-shell`, `/design-screen`.
+- **Endpoint Specification**: Define routes, methods, request/response schemas.
+- **Data Model Focus**: The `/data-model` phase is especially important.
+- **Error Responses**: Define standard error formats.
 
 ---
 
