@@ -8,6 +8,7 @@ Read `/product/product-overview.md` to determine the platform. The export format
 
 - **Web Application**: React/Tailwind components, CSS tokens
 - **macOS/iOS Native**: Swift type definitions, UI specifications
+- **TUI (Terminal UI)**: View specs, key bindings, Elm-style state patterns
 - **CLI Tool**: Command specifications, no components
 - **API/Backend**: Endpoint specifications, data schemas
 
@@ -152,6 +153,36 @@ product-plan/
         ├── spec.md              # UI specification
         ├── tests.md
         ├── types.swift
+        └── sample-data.json
+```
+
+### TUI (Terminal UI) Structure
+
+```
+product-plan/
+├── README.md
+├── product-overview.md
+├── prompts/
+├── instructions/
+├── architecture/                # Critical: Elm architecture, state management
+│   ├── overview.md
+│   ├── state-management.md      # Model-Update-View patterns
+│   └── [domain].md
+├── dependencies.md              # Bubble Tea, Lip Gloss, etc.
+├── design-system/
+│   └── colors.md                # ANSI color palette
+├── data-model/
+│   ├── README.md
+│   ├── types.go                 # Or language-appropriate
+│   └── sample-data.json
+├── shell/
+│   └── spec.md                  # Main layout specification
+└── sections/                    # Views/screens
+    └── [view-name]/
+        ├── README.md
+        ├── spec.md              # View specification
+        ├── keybindings.md       # Keyboard shortcuts
+        ├── tests.md
         └── sample-data.json
 ```
 
@@ -1230,5 +1261,6 @@ The components are props-based and portable — they accept data and callbacks, 
 **Platform-specific notes:**
 - **Web**: Components are React/Tailwind, portable to any React setup
 - **Native**: Export Swift type definitions and UI specs, not components
+- **TUI**: Export view specs, key bindings, state patterns (Elm architecture)
 - **CLI**: Export command specs and test scenarios, no visual components
 - **API**: Export endpoint specs and data schemas

@@ -259,6 +259,7 @@ For platform-specific patterns, consult the patterns library:
 
 - **macOS Native**: See `.claude/commands/design-os/patterns/macos-patterns.md`
 - **iOS Native**: See `.claude/commands/design-os/patterns/ios-patterns.md`
+- **TUI (Terminal UI)**: See `.claude/commands/design-os/patterns/tui-patterns.md`
 - **CLI Tools**: See `.claude/commands/design-os/patterns/cli-patterns.md`
 
 These provide ready-to-use patterns for window management, navigation, state management, and common UI components.

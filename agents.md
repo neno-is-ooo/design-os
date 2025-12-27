@@ -26,20 +26,21 @@ DO:
 
 Not all phases apply to all platforms:
 
-| Phase | Web | macOS/iOS | CLI | API |
-|-------|-----|-----------|-----|-----|
-| `/product-vision` | Yes | Yes | Yes | Yes |
-| `/product-roadmap` | Yes | Yes | Yes | Yes |
-| `/data-model` | Yes | Yes | Yes | Yes |
-| `/dependencies` | Yes | Yes | Yes | Yes |
-| `/design-tokens` | Yes | Yes | Skip | Skip |
-| `/design-shell` | Yes | Yes | Skip | Skip |
-| `/shape-section` | Yes | Yes | Adapted* | Adapted* |
-| `/architecture` | Yes | Yes | Yes | Yes |
-| `/design-screen` | Yes | Yes | Skip | Skip |
-| `/export-product` | Yes | Yes | Yes | Yes |
+| Phase | Web | macOS/iOS | TUI | CLI | API |
+|-------|-----|-----------|-----|-----|-----|
+| `/product-vision` | Yes | Yes | Yes | Yes | Yes |
+| `/product-roadmap` | Yes | Yes | Yes | Yes | Yes |
+| `/data-model` | Yes | Yes | Yes | Yes | Yes |
+| `/dependencies` | Yes | Yes | Yes | Yes | Yes |
+| `/design-tokens` | Yes | Yes | Adapted* | Skip | Skip |
+| `/design-shell` | Yes | Yes | Yes | Skip | Skip |
+| `/shape-section` | Yes | Yes | Yes | Adapted** | Adapted** |
+| `/architecture` | Yes | Yes | Yes | Yes | Yes |
+| `/design-screen` | Yes | Yes | Yes | Skip | Skip |
+| `/export-product` | Yes | Yes | Yes | Yes | Yes |
 
-*For CLI: sections become commands/subcommands. For API: sections become endpoint groups.
+*TUI design tokens focus on ANSI colors and terminal styling.
+**For CLI: sections become commands/subcommands. For API: sections become endpoint groups.
 
 ---
 
@@ -243,6 +244,15 @@ product-plan/                      # Export package (generated)
 - **Dynamic Type**: Support user font size preferences.
 - **Props-Based Views**: Views should accept data via parameters, not global state.
 - **Platform Patterns**: Reference `.claude/commands/design-os/patterns/macos-patterns.md` or `ios-patterns.md`.
+
+### TUI (Terminal UI)
+
+- **Full design process applies** — but adapted for terminal constraints.
+- **Design Tokens**: ANSI colors (16/256/true color), no web colors.
+- **Shell Design**: Main terminal layout (panels, status bar, help bar).
+- **Elm Architecture**: Model-Update-View pattern (especially for Bubble Tea).
+- **Keyboard Navigation**: All actions must be keyboard-accessible.
+- **Reference**: `.claude/commands/design-os/patterns/tui-patterns.md`.
 
 ### CLI Tools
 

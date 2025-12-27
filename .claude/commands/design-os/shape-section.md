@@ -41,6 +41,14 @@ Use the AskUserQuestion tool to ask 4-6 targeted questions. Adapt based on the p
 - **UI patterns** - Any specific interactions, layouts, or components needed?
 - **Scope boundaries** - What should be explicitly excluded?
 
+### For TUI (Terminal UI):
+- **Main user actions/tasks** - What can users do in this view?
+- **Information to display** - What data needs to be shown in the terminal?
+- **Layout pattern** - Panels, split views, full-screen, modal dialogs?
+- **Key bindings** - What keyboard shortcuts are needed?
+- **State transitions** - What views/modes can the user navigate to?
+- **Scope boundaries** - What's explicitly out of scope?
+
 ### For CLI Tools:
 - **Commands/subcommands** - What commands belong to this section?
 - **Flags and arguments** - What options does each command accept?

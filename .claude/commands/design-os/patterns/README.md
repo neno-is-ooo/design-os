@@ -6,7 +6,8 @@ Reference patterns for different platforms. These patterns inform architecture d
 
 - **[macOS Patterns](./macos-patterns.md)** - Swift/AppKit/SwiftUI desktop patterns
 - **[iOS Patterns](./ios-patterns.md)** - Swift/UIKit/SwiftUI mobile patterns
-- **[CLI Patterns](./cli-patterns.md)** - Command-line interface patterns
+- **[TUI Patterns](./tui-patterns.md)** - Terminal UI patterns (Charm/Bubble Tea, Textual, Ratatui)
+- **[CLI Patterns](./cli-patterns.md)** - Non-interactive command-line patterns
 
 ## How to Use
 

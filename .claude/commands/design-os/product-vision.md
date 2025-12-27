@@ -22,7 +22,8 @@ Options:
 - **iOS Native** — Swift with UIKit or SwiftUI
 - **Cross-Platform Desktop** — Electron or Tauri (exports use React/Tailwind)
 - **Mobile Cross-Platform** — React Native or Flutter
-- **CLI Tool** — Command-line application
+- **TUI (Terminal UI)** — Interactive terminal app (Charm/Bubble Tea, Textual, Ratatui, Ink)
+- **CLI Tool** — Non-interactive command-line application
 - **API/Backend** — Server-side service
 
 **Important:** The platform choice affects:
@@ -142,6 +143,13 @@ You can run `/product-roadmap` next to break this down into development sections
 **Mobile Cross-Platform:**
 - Shell design focuses on tab bars, navigation stacks
 - Export includes component specifications and navigation patterns
+
+**TUI (Terminal UI):**
+- Full design process applies (shell becomes terminal layout, screens become views)
+- Design tokens focus on ANSI colors and terminal-safe styling
+- Shell design defines the main terminal layout (panels, status bar, etc.)
+- Export includes component specifications and state patterns
+- Architecture phase important for state management (Elm-like for Bubble Tea)
 
 **CLI Tool:**
 - Skip shell design and screen design phases
